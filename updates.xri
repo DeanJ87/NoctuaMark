@@ -11,7 +11,7 @@
          version="1.0.0"
          description="Astrophotography watermark and annotation tool for PixInsight">
          <files>
-            <file>src/scripts/NoctuaMark/NoctuaMark.js</file>
+            <file>NoctuaMark.js</file>
          </files>
       </package>
    </packages>
