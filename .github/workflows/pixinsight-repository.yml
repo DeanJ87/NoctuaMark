@@ -1,0 +1,129 @@
+name: PixInsight Repository
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Semver version to package, for example 1.0.0"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pixinsight-repository
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build repository artifacts
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      archive: ${{ steps.version.outputs.archive }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION="${GITHUB_REF_NAME#v}"
+          fi
+
+          if [[ ! "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid semver version: ${VERSION}" >&2
+            exit 1
+          fi
+
+          echo "version=${VERSION}" >> "${GITHUB_OUTPUT}"
+          echo "archive=NoctuaMark-${VERSION}.tar.gz" >> "${GITHUB_OUTPUT}"
+
+      - name: Build PixInsight repository
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: node .github/scripts/build-pixinsight-repository.mjs
+
+      - name: Validate package layout
+        run: |
+          set -euo pipefail
+          test -f "dist/${{ steps.version.outputs.archive }}"
+          test -f dist/updates.xri
+          test -f dist/SHA1SUMS
+          tar -tzf "dist/${{ steps.version.outputs.archive }}" | grep -Fx "src/scripts/NoctuaMark/NoctuaMark.js"
+          (cd dist && sha1sum -c SHA1SUMS)
+          grep -F 'type="script"' dist/updates.xri
+          grep -F 'os="all"' dist/updates.xri
+          grep -F 'arch="noarch"' dist/updates.xri
+          grep -F "fileName=\"${{ steps.version.outputs.archive }}\"" dist/updates.xri
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pixinsight-repository-${{ steps.version.outputs.version }}
+          path: dist/
+          if-no-files-found: error
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+  deploy-pages:
+    name: Deploy GitHub Pages repository
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  release:
+    name: Publish GitHub release assets
+    needs: build
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download repository artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: pixinsight-repository-${{ needs.build.outputs.version }}
+          path: dist/
+
+      - name: Create or update release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          ARCHIVE: ${{ needs.build.outputs.archive }}
+        run: |
+          set -euo pipefail
+
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            gh release upload "${TAG}" \
+              "dist/${ARCHIVE}" \
+              dist/updates.xri \
+              dist/SHA1SUMS \
+              --clobber
+          else
+            gh release create "${TAG}" \
+              "dist/${ARCHIVE}" \
+              dist/updates.xri \
+              dist/SHA1SUMS \
+              --title "${TAG}" \
+              --notes "NoctuaMark ${TAG#v} PixInsight repository release."
+          fi
