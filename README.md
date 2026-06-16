@@ -1,66 +1,93 @@
 # NoctuaMark
+
 **PixInsight Astrophotography Watermark & Annotation Tool**
 
 Created by **Tarun Pulikanti** — @hyderabadiastro
 
----
+NoctuaMark is a PixInsight script for adding presentation-ready watermarks and annotations to astrophotography images. It supports signatures, FITS/XISF metadata, captions, PNG logos, and arrow labels with a live image preview.
 
 ## Features
-- Signature — name, handle, copyright year, custom font, colour and proportional size
-- - FITS / XISF Metadata — auto-extracts object, date, telescope, camera, filter, exposure; fully editable multi-line paragraph
-  - - Description / Caption — free-form multi-line text block
-    - - PNG Logo — drag your logo with full transparency support
-      - - Annotations — unlimited arrow + label overlays pointing to any feature
-        - - Live Preview — real-time preview on your actual image with zoom (scroll wheel) and pan (middle-click)
-          - - Drag to position — every element independently draggable
-            - - Proportional font scaling — sizes in % of image width, correct at any resolution
-              - - Collapsible panels — only open what you need
-                - - Settings persist between sessions
-                 
-                  - ---
 
-                  ## Installation
+- Signature with name, handle, copyright year, font, colour, opacity, and proportional sizing
+- FITS/XISF metadata extraction for object, date, telescope, camera, filter, exposure, site, and sky quality
+- Editable metadata and description text blocks
+- PNG logo overlay with transparency support
+- Arrow and label annotations
+- Live preview on the active image
+- Preview zoom with scroll wheel and panning with middle-click drag
+- Drag positioning for signature, metadata, description, PNG logo, and annotations
+- Proportional font scaling based on image width
+- Collapsible settings panels
+- Persistent settings between sessions
 
-                  1. Go to the repository: https://github.com/pulikantitarun/NoctuaMark
-                  2. 2. Click on **NoctuaMark.js**
-                     3. 3. Click the **Download raw file** button (top right)
-                        4. 4. Save the file and place it here:
-                          
-                           5. **Windows:**
-                           6. ```
-                              C:\Program Files\PixInsight\src\scripts\NoctuaMark\NoctuaMark.js
-                              ```
-                              **macOS / Linux:**
-                              ```
-                              ~/PixInsight/src/scripts/NoctuaMark/NoctuaMark.js
-                              ```
+## Installation
 
-                              5. In PixInsight: **Script > Feature Scripts > Add** — select the NoctuaMark folder — OK
-                              6. 6. Restart PixInsight
-                                 7. 7. Run from **Script > Utilities > NoctuaMark**
-                                   
-                                    8. **Tip:** Right-click the menu entry and choose **Add to Toolbar** for one-click access.
-                                   
-                                    9. ---
-                                   
-                                    10. ## How to Use
-                                   
-                                    11. | Control | Action |
-                                    12. |---|---|
-                                    13. | Scroll wheel on preview | Zoom in / out |
-                                    14. | Middle-click + drag | Pan when zoomed |
-                                    15. | Left-click + drag any element | Reposition it |
-                                    16. | Triangle section headers | Expand / collapse panels |
-                                    17. | + Add Annotation button | Click preview twice to place arrow |
-                                   
-                                    18. ---
-                                   
-                                    19. ## License
-                                    20. MIT License — free to use, share and modify with credit to the author.
-                                   
-                                    21. ---
-                                   
-                                    22. ## Credits
-                                    23. Developed by **Tarun Pulikanti**
-                                    24. Instagram / Astrobin: @hyderabadiastro
-                                    25. GitHub: https://github.com/pulikantitarun
+NoctuaMark is distributed through a PixInsight update repository.
+
+1. Open PixInsight.
+2. Go to **Resources > Updates > Manage Repositories**.
+3. Add the NoctuaMark repository URL:
+
+   ```text
+   https://pulikantitarun.github.io/NoctuaMark/
+   ```
+
+4. Run **Resources > Updates > Check for Updates**.
+5. Install the NoctuaMark update.
+6. Restart PixInsight.
+7. Run NoctuaMark from **Script > Utilities > NoctuaMark**.
+
+Tip: Right-click the menu entry and choose **Add to Toolbar** for one-click access.
+
+## Release Packaging
+
+NoctuaMark releases are published as PixInsight-compatible update packages. Each release is tagged with a semantic version, for example `v1.0.0`.
+
+For each release, GitHub Actions builds:
+
+- `NoctuaMark-<version>.tar.gz`
+- `updates.xri`
+
+The archive installs the script under PixInsight's script deployment path:
+
+```text
+src/scripts/NoctuaMark/NoctuaMark.js
+```
+
+The generated `updates.xri` is published to GitHub Pages alongside the release archive. It declares NoctuaMark as a platform-independent PJSR script package with:
+
+- `type="script"`
+- `os="all"`
+- `arch="noarch"`
+- release date derived from the release build
+- package filename derived from the semantic version
+- SHA1 checksum for PixInsight package verification
+
+The same `.tar.gz` artifact is attached to the GitHub release for direct download and traceability.
+
+## Usage
+
+| Control | Action |
+| --- | --- |
+| Scroll wheel on preview | Zoom in or out |
+| Middle-click + drag | Pan when zoomed |
+| Left-click + drag an element | Reposition it |
+| Section headers | Expand or collapse panels |
+| **+ Add Annotation** | Click the preview twice to place an arrow label |
+
+## Notes
+
+- NoctuaMark applies changes to the active image view.
+- Review the live preview before applying the watermark.
+- Save or duplicate important work before applying destructive edits.
+
+## License
+
+MIT License. Free to use, share, and modify with credit to the author.
+
+## Credits
+
+Developed by **Tarun Pulikanti**
+
+- Instagram / AstroBin: @hyderabadiastro
+- GitHub: <https://github.com/pulikantitarun>
