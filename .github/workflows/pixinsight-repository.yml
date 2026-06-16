@@ -115,17 +115,26 @@ jobs:
         run: |
           set -euo pipefail
 
+          RELEASE_FLAGS=()
+          if [[ "${TAG}" == *-* ]]; then
+            RELEASE_FLAGS+=(--prerelease --latest=false)
+          fi
+
           if gh release view "${TAG}" >/dev/null 2>&1; then
             gh release upload "${TAG}" \
               "dist/${ARCHIVE}" \
               dist/updates.xri \
               dist/SHA1SUMS \
               --clobber
+            if [[ ${#RELEASE_FLAGS[@]} -gt 0 ]]; then
+              gh release edit "${TAG}" "${RELEASE_FLAGS[@]}"
+            fi
           else
             gh release create "${TAG}" \
               "dist/${ARCHIVE}" \
               dist/updates.xri \
               dist/SHA1SUMS \
               --title "${TAG}" \
-              --notes "NoctuaMark ${TAG#v} PixInsight repository release."
+              --notes "NoctuaMark ${TAG#v} PixInsight repository release." \
+              "${RELEASE_FLAGS[@]}"
           fi
